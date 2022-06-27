@@ -1,47 +1,17 @@
-using Hangfire;
-using Hangfire.PostgreSql;
-using Hangfire.RecurringJobs;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-
-// builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql("User ID=postgres;Password=sa;Server=localhost;Port=5432;Database=greenlibrary;Integrated Security=true;Pooling=true;"));
-
-
-// Add Hangfire services.
-builder.Services.AddHangfire(config =>
-                config.UsePostgreSqlStorage("User ID=postgres;Password=sa;Server=localhost;Port=5432;Database=Hangfire;"));
-
-
-builder.Services.AddHangfireServer();
-
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+namespace exchange_rate_hangfire
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+    }
 }
-
-app.UseAuthorization();
-
-app.MapControllers();
-app.MapHangfireDashboard();
-app.UseHangfireDashboard();
-
-// Hangfire Controller
-// Cron Url : https://crontab.guru/#*/5_*_*_*_*
-
-RecurringJob.AddOrUpdate<CurrencyExchangeJob>(nameof(CurrencyExchangeJob), o => o.UpdateCurrencyExchange(), "* * * * *", TimeZoneInfo.Utc);
-
-
-app.Run();
