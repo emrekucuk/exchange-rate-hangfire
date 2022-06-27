@@ -1,6 +1,6 @@
 using Hangfire;
 using Hangfire.PostgreSql;
-using Hangfire.Schedules;
+using Hangfire.RecurringJobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +37,11 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHangfireDashboard();
 app.UseHangfireDashboard();
-RecurringJobs.UpdateKur();
+
+// Hangfire Controller
+// Cron Url : https://crontab.guru/#*/5_*_*_*_*
+
+RecurringJob.AddOrUpdate<CurrencyExchangeJob>(nameof(CurrencyExchangeJob), o => o.UpdateCurrencyExchange(), "* * * * *", TimeZoneInfo.Utc);
+
 
 app.Run();
