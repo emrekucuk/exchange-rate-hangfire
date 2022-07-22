@@ -15,13 +15,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add Hangfire services.
-// builder.Services.AddHangfire(config =>
-//                 config.UsePostgreSqlStorage("User ID=postgres;Password=sa;Server=localhost;Port=5432;Database=currency-exchange;"));
+builder.Services.AddHangfire(config =>
+                config.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("PostgresConnection")));
 
 
-// builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer();
 
-builder.Services.AddSingleton<ApplicationDbContext>(new ApplicationDbContext("User ID=postgres;Password=sa;Server=localhost;Port=5432;Database=currency-exchange;"));
+builder.Services.AddSingleton<ApplicationDbContext>(new ApplicationDbContext(builder.Configuration.GetConnectionString("PostgresConnection")));
 
 
 var app = builder.Build();
@@ -36,18 +36,17 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
-// app.MapHangfireDashboard();
 
-// app.UseHangfireDashboard("/hangfire", new DashboardOptions
-// {
-//     DashboardTitle = "Guide.fm Hangfire DashBoard",
-//     AppPath = "/Home",
-// });
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    DashboardTitle = "Currency Exchange Hangfire DashBoard",
+    AppPath = "/Home",
+});
 
 // Hangfire Controller
 // Cron Url : https://crontab.guru/#*/5_*_*_*_*
 
-// RecurringJob.AddOrUpdate<CurrencyExchangeJob>(nameof(CurrencyExchangeJob), o => o.UpdateCurrencyExchange(), "* * * * *", TimeZoneInfo.Utc);
+RecurringJob.AddOrUpdate<CurrencyExchangeJob>(nameof(CurrencyExchangeJob), o => o.UpdateCurrencyExchange(), "* * * * *", TimeZoneInfo.Utc);
 
 
 app.Run();
