@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Domain.Entites;
 public class Currency
 {
@@ -6,5 +8,6 @@ public class Currency
     public string Code { get; set; }
 
     // Child Object
+    [NotMapped]
     public List<CurrencyExchange> CurrencyExchanges { get; set; }
 }

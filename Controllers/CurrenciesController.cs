@@ -9,27 +9,40 @@ namespace exchange_rate_hangfire.Controllers
     [ApiController]
     [Route("[controller]")]
     [Produces("application/json")]
-    public class CurencyController : ControllerBase
+    public class CurenciesController : ControllerBase
     {
         private readonly ApplicationDbContext _applicationDbContext;
-        public CurencyController(ApplicationDbContext applicationDbContext)
+        public CurenciesController(ApplicationDbContext applicationDbContext)
         {
             _applicationDbContext = applicationDbContext;
         }
 
         [AllowAnonymous]
         [HttpGet("[action]")]
-        public async Task<List<Currency>> All()
+        public async Task<List<CurrencyDto>> All()
         {
-            var list = await _applicationDbContext.Currencies
+            var entities = await _applicationDbContext.Currencies
                                     .Include(c => c.CurrencyExchanges)
                                     .ToListAsync();
-            return list;
+
+            // Mapping to Dto
+            var dtoModels = new List<CurrencyDto>();
+            entities?.ForEach((entity) =>
+            {
+                dtoModels.Add(new CurrencyDto()
+                {
+                    Id = entity.Id,
+                    Name = entity.Name,
+                    Code = entity.Code,
+                });
+            });
+
+            return dtoModels;
         }
 
         [AllowAnonymous]
         [HttpPost("[action]")]
-        public async Task<Currency> Create(Currency currency)
+        public async Task<Currency> Create(CurrencyDto currency)
         {
             // Verify That the Currency Name or Code Does Not Already Exist
             var isThereAnyCurrency = await _applicationDbContext.Currencies.AnyAsync(c => c.Name.ToLower() == currency.Name.ToLower() || c.Code.ToLower() == currency.Code.ToLower());
@@ -52,7 +65,7 @@ namespace exchange_rate_hangfire.Controllers
 
         [AllowAnonymous]
         [HttpPut("[action]")]
-        public async Task<Currency> Update(Currency currency)
+        public async Task<Currency> Update(CurrencyDto currency)
         {
             // Verify That the Currency Name or Code Does Not Already Exist
             var isThereAnyCurrency = await _applicationDbContext.Currencies.AnyAsync(c => c.Id != currency.Id && (c.Name.ToLower() == currency.Name.ToLower() || c.Code.ToLower() == currency.Code.ToLower()));

@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Domain.Entites;
+using Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace Hangfire.RecurringJobs
 {
@@ -13,35 +16,56 @@ namespace Hangfire.RecurringJobs
             public string Result { get; set; }
             public Dictionary<string, float> Data { get; set; }
         }
+        private readonly ApplicationDbContext _applicationDbContext;
+        public CurrencyExchangeJob(ApplicationDbContext applicationDbContext)
+        {
+            _applicationDbContext = applicationDbContext;
+        }
 
         public async Task UpdateCurrencyExchange()
         {
-            List<string> currencies = new List<string>();
-            currencies.Add("USD");
-            currencies.Add("EUR");
-            currencies.Add("INR");
-            currencies.Add("CAD");
-            currencies.Add("AUD");
+            var currencies = await _applicationDbContext.Currencies.ToListAsync();
+            var currencyExchanges = await _applicationDbContext.CurrencyExchanges.Where(c => c.Date.Day == DateTime.Today.Day).ToListAsync();
 
             foreach (var currency in currencies)
             {
-                await GetFromExchangeRateApi(currency);
-                // await GetFromFreeCurrencyApi(currency);
+                // var currencyValue = await GetFromFreeCurrencyApi(currency.Code);
+                var currencyValue = await GetFromExchangeRateApi(currency.Code);
+                if (currencyExchanges.Count > 0)
+                {
+                    foreach (var currencyExchange in currencyExchanges)
+                    {
+                        if (currencyExchange.CurrencyId == currency.Id)
+                        {
+                            _applicationDbContext.CurrencyExchanges.Remove(currencyExchange);
+                        }
+                    }
+                    await _applicationDbContext.SaveChangesAsync();
+                }
+                var createCurrencyExchange = new CurrencyExchange()
+                {
+                    CurrencyId = currency.Id,
+                    Value = currencyValue.Value.ToString(),
+                    Date = DateTime.UtcNow,
+                };
+                _applicationDbContext.CurrencyExchanges.Add(createCurrencyExchange);
+                await _applicationDbContext.SaveChangesAsync();
             }
 
         }
 
-        static async Task GetFromExchangeRateApi(string currency)
+        static async Task<CurrencyValue> GetFromExchangeRateApi(string currencyCode)
         {
             var currencyValue = new CurrencyValue();
             using (var httpClient = new HttpClient())
             {
                 currencyValue.Value = ConvertStringTo4DigitFloat(JsonConvert.DeserializeObject<ApiModel>(
-                    await httpClient.GetStringAsync("https://api.exchangerate.host/convert?from=" + currency.ToLower() + "&to=TRY"))?.Result.Replace(".", ","));
+                    await httpClient.GetStringAsync("https://api.exchangerate.host/convert?from=" + currencyCode.ToLower() + "&to=TRY"))?.Result.Replace(".", ","));
             }
 
-            System.Console.WriteLine(currency + " Value : " + currencyValue.Value);
+            System.Console.WriteLine(currencyCode + " Value : " + currencyValue.Value);
             System.Console.WriteLine("-------------------------------------------------");
+            return currencyValue;
 
         }
 
@@ -51,24 +75,26 @@ namespace Hangfire.RecurringJobs
             return float.Parse($"{newValue:0.0000}");
         }
 
-        public static async Task GetFromFreeCurrencyApi(string currency)
+        public async Task<CurrencyValue> GetFromFreeCurrencyApi(string currencyCode)
         {
-            var value = new CurrencyValue();
+            var currencyValue = new CurrencyValue();
             var apiKey = "c33a4390-6d40-11ec-9291-4df0a4bd7c60";
             using (var httpClient = new HttpClient())
             {
                 var getCurrency = Newtonsoft.Json.JsonConvert.DeserializeObject<ApiModel>(
                     await httpClient.GetStringAsync(
                         "https://freecurrencyapi.net/api/v2/latest?apikey=" + apiKey + "&base_currency=TRY")).Data;
-                float deger;
+                float value;
 
-                if (getCurrency.TryGetValue(currency, out deger))
-                    value.Value = (float)Math.Round(1 / deger, 4);
+                if (getCurrency.TryGetValue(currencyCode, out value))
+                    currencyValue.Value = (float)Math.Round(1 / value, 4);
 
-                System.Console.WriteLine(currency + " Value : " + value.Value);
-                System.Console.WriteLine("-------------------------------------------------");
 
             }
+
+            System.Console.WriteLine(currencyCode + " Value : " + currencyValue.Value);
+            System.Console.WriteLine("-------------------------------------------------");
+            return currencyValue;
         }
     }
 }
