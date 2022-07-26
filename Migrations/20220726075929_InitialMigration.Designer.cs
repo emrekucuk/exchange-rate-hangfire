@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace exchange_rate_hangfire.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220721070203_InitialMigration")]
+    [Migration("20220726075929_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,6 +52,30 @@ namespace exchange_rate_hangfire.Migrations
                             Id = new Guid("ec00761e-9ed7-49fd-841b-1b86cfb4e58c"),
                             Code = "EUR",
                             Name = "Euro"
+                        },
+                        new
+                        {
+                            Id = new Guid("ef0061b8-45a6-42d4-8aaf-7f4d002b7295"),
+                            Code = "GBP",
+                            Name = "Ingiliz Poundu"
+                        },
+                        new
+                        {
+                            Id = new Guid("fefd1d40-48c4-492a-83df-f6b605fcef26"),
+                            Code = "AUD",
+                            Name = "Avustralya Doları"
+                        },
+                        new
+                        {
+                            Id = new Guid("078d66fd-cbb2-4b19-bcce-40c7150c7a8e"),
+                            Code = "CAD",
+                            Name = "Kanada Doları"
+                        },
+                        new
+                        {
+                            Id = new Guid("51f045e1-ab39-4eb9-9c3a-493cf018f0f2"),
+                            Code = "SAR",
+                            Name = "Suudi Riyali"
                         });
                 });
 
@@ -67,8 +91,8 @@ namespace exchange_rate_hangfire.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Value")
-                        .HasColumnType("text");
+                    b.Property<double>("Value")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -80,17 +104,12 @@ namespace exchange_rate_hangfire.Migrations
             modelBuilder.Entity("Domain.Entites.CurrencyExchange", b =>
                 {
                     b.HasOne("Domain.Entites.Currency", "Currency")
-                        .WithMany("CurrencyExchanges")
+                        .WithMany()
                         .HasForeignKey("CurrencyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Currency");
-                });
-
-            modelBuilder.Entity("Domain.Entites.Currency", b =>
-                {
-                    b.Navigation("CurrencyExchanges");
                 });
 #pragma warning restore 612, 618
         }

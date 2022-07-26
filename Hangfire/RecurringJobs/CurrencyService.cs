@@ -45,7 +45,7 @@ namespace Hangfire.RecurringJobs
                 var createCurrencyExchange = new CurrencyExchange()
                 {
                     CurrencyId = currency.Id,
-                    Value = currencyValue.Value.ToString(),
+                    Value = currencyValue.Value,
                     Date = DateTime.UtcNow,
                 };
                 _applicationDbContext.CurrencyExchanges.Add(createCurrencyExchange);

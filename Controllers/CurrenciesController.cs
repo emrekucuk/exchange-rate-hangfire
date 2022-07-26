@@ -22,7 +22,6 @@ namespace exchange_rate_hangfire.Controllers
         public async Task<List<CurrencyDto>> All()
         {
             var entities = await _applicationDbContext.Currencies
-                                    .Include(c => c.CurrencyExchanges)
                                     .ToListAsync();
 
             // Mapping to Dto

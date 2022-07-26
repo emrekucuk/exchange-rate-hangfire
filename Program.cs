@@ -82,7 +82,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 // Hangfire Controller
 // Cron Url : https://crontab.guru/#*/5_*_*_*_*
 
-RecurringJob.AddOrUpdate<CurrencyExchangeJob>(nameof(CurrencyExchangeJob), o => o.UpdateCurrencyExchange(), "* * * * *", TimeZoneInfo.Utc);
+RecurringJob.AddOrUpdate<CurrencyExchangeJob>(nameof(CurrencyExchangeJob), o => o.UpdateCurrencyExchange(), "0 * * * *", TimeZoneInfo.Utc);
 
 
 app.Run();

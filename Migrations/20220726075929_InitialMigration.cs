@@ -27,7 +27,7 @@ namespace exchange_rate_hangfire.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Value = table.Column<string>(type: "text", nullable: true),
+                    Value = table.Column<double>(type: "double precision", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CurrencyId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -47,8 +47,12 @@ namespace exchange_rate_hangfire.Migrations
                 columns: new[] { "Id", "Code", "Name" },
                 values: new object[,]
                 {
+                    { new Guid("078d66fd-cbb2-4b19-bcce-40c7150c7a8e"), "CAD", "Kanada Doları" },
+                    { new Guid("51f045e1-ab39-4eb9-9c3a-493cf018f0f2"), "SAR", "Suudi Riyali" },
                     { new Guid("ec00761e-9ed7-49fd-841b-1b86cfb4e58c"), "EUR", "Euro" },
-                    { new Guid("f973d74b-b7df-40a6-a530-017dcdd870e7"), "USD", "Dolar" }
+                    { new Guid("ef0061b8-45a6-42d4-8aaf-7f4d002b7295"), "GBP", "Ingiliz Poundu" },
+                    { new Guid("f973d74b-b7df-40a6-a530-017dcdd870e7"), "USD", "Dolar" },
+                    { new Guid("fefd1d40-48c4-492a-83df-f6b605fcef26"), "AUD", "Avustralya Doları" }
                 });
 
             migrationBuilder.CreateIndex(
