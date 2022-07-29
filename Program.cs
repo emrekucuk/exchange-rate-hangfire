@@ -1,9 +1,11 @@
-using System.Reflection;
 using Hangfire;
+using Hangfire.Authorization;
+using Hangfire.Models;
 using Hangfire.PostgreSql;
 using Hangfire.RecurringJobs;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +18,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
             {
-                // c.AddServer(new OpenApiServer() { Url = environmentService.BackofficeApiUrl, Description = environmentService.EnvironmentName });
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Currency Exchange Rate", Version = "v1" });
 
                 // Set the comments path for the Swagger JSON and UI.
@@ -51,6 +52,7 @@ builder.Services.AddSwaggerGen(c =>
 
 
 // Add Hangfire services.
+builder.Services.Configure<HangfireSettings>(builder.Configuration.GetSection("HangfireSettings"));
 builder.Services.AddHangfire(config =>
                 config.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("PostgresConnection")));
 
@@ -73,10 +75,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+var _hangfireOptions = app.Services.GetService<IOptions<HangfireSettings>>();
+
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
-    DashboardTitle = "Currency Exchange Hangfire DashBoard",
-    AppPath = "/Home",
+    DashboardTitle = "Currency Exchange Hangfire DashBoard",// Dashboard sayfasına ait Başlık alanını değiştiririz.
+    AppPath = "/Home",                     // Dashboard üzerinden "back to site" button
+                                           // PrefixPath = (env.IsDevelopment()) ? "" : "",
+    Authorization = new[] { new HangfireDashboardAuthFilter(_hangfireOptions) },   // Güvenlik için Authorization İşlemleri
 });
 
 // Hangfire Controller
