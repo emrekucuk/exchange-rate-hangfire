@@ -7,6 +7,13 @@ namespace Hangfire.RecurringJobs
 {
     public class CurrencyExchangeJob
     {
+        private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IConfiguration _configuration;
+        public CurrencyExchangeJob(ApplicationDbContext applicationDbContext, IConfiguration configuration)
+        {
+            _applicationDbContext = applicationDbContext;
+            _configuration = configuration;
+        }
 
         public class CurrencyValue
         {
@@ -16,13 +23,6 @@ namespace Hangfire.RecurringJobs
         {
             public string Result { get; set; }
             public Dictionary<string, float> Data { get; set; }
-        }
-        private readonly ApplicationDbContext _applicationDbContext;
-        private readonly IConfiguration _configuration;
-        public CurrencyExchangeJob(ApplicationDbContext applicationDbContext, IConfiguration configuration)
-        {
-            _applicationDbContext = applicationDbContext;
-            _configuration = configuration;
         }
 
         public async Task UpdateCurrencyExchange()
@@ -34,27 +34,21 @@ namespace Hangfire.RecurringJobs
             {
                 // var currencyValue = await GetFromFreeCurrencyApi(currency.Code);
                 var currencyValue = await GetFromExchangeRateApi(currency.Code);
+
                 if (currencyExchanges.Count > 0)
                 {
                     foreach (var currencyExchange in currencyExchanges)
                     {
                         if (currencyExchange.CurrencyId == currency.Id)
                         {
-                            _applicationDbContext.CurrencyExchanges.Remove(currencyExchange);
+                            currencyExchange.Date = DateTime.UtcNow;
+                            currencyExchange.Value = currencyValue.Value;
+                            _applicationDbContext.CurrencyExchanges.Update(currencyExchange);
                         }
                     }
                     await _applicationDbContext.SaveChangesAsync();
                 }
-                var createCurrencyExchange = new CurrencyExchange()
-                {
-                    CurrencyId = currency.Id,
-                    Value = currencyValue.Value,
-                    Date = DateTime.UtcNow,
-                };
-                _applicationDbContext.CurrencyExchanges.Add(createCurrencyExchange);
-                await _applicationDbContext.SaveChangesAsync();
             }
-
         }
 
         static async Task<CurrencyValue> GetFromExchangeRateApi(string currencyCode)
@@ -70,12 +64,6 @@ namespace Hangfire.RecurringJobs
             System.Console.WriteLine("-------------------------------------------------");
             return currencyValue;
 
-        }
-
-        static float ConvertStringTo4DigitFloat(string value)
-        {
-            double newValue = Double.Parse(value);
-            return float.Parse($"{newValue:0.0000}");
         }
 
         public async Task<CurrencyValue> GetFromFreeCurrencyApi(string currencyCode)
@@ -95,6 +83,11 @@ namespace Hangfire.RecurringJobs
             System.Console.WriteLine($"{currencyCode} Value : {currencyValue.Value}");
             System.Console.WriteLine("-------------------------------------------------");
             return currencyValue;
+        }
+        static float ConvertStringTo4DigitFloat(string value)
+        {
+            double newValue = Double.Parse(value);
+            return float.Parse($"{newValue:0.0000}");
         }
     }
 }
