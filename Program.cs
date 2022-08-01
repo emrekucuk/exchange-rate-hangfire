@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Hangfire;
 using Hangfire.Authorization;
 using Hangfire.Models;
@@ -73,6 +74,27 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 
+// app.Use(async (context, next) =>
+// {
+//     Stopwatch timer = new Stopwatch();
+//     timer.Start();
+//     var path = context.Request.Path;
+
+//     // Do work that can write to the Response.
+//     await next.Invoke();
+//     // Do logging or other work that doesn't write to the Response.
+
+//     System.Console.WriteLine($"{path.Value}");
+//     var url = path.Value.Split("/");
+//     var controllerName = url[1];
+//     var actionName = url[2];
+//     Console.WriteLine($"Controller Name: {controllerName}");
+//     System.Console.WriteLine($"Action Name {actionName}");
+//     timer.Stop();
+//     System.Console.WriteLine($"Job Time: {timer.ElapsedMilliseconds} ms");
+
+
+// });
 app.MapControllers();
 
 var _hangfireOptions = app.Services.GetService<IOptions<HangfireSettings>>();

@@ -7,6 +7,7 @@ namespace Hangfire.RecurringJobs
 {
     public class CurrencyExchangeJob
     {
+
         public class CurrencyValue
         {
             public float Value { get; set; }
@@ -17,9 +18,11 @@ namespace Hangfire.RecurringJobs
             public Dictionary<string, float> Data { get; set; }
         }
         private readonly ApplicationDbContext _applicationDbContext;
-        public CurrencyExchangeJob(ApplicationDbContext applicationDbContext)
+        private readonly IConfiguration _configuration;
+        public CurrencyExchangeJob(ApplicationDbContext applicationDbContext, IConfiguration configuration)
         {
             _applicationDbContext = applicationDbContext;
+            _configuration = configuration;
         }
 
         public async Task UpdateCurrencyExchange()
@@ -60,10 +63,10 @@ namespace Hangfire.RecurringJobs
             using (var httpClient = new HttpClient())
             {
                 currencyValue.Value = ConvertStringTo4DigitFloat(JsonConvert.DeserializeObject<ApiModel>(
-                    await httpClient.GetStringAsync("https://api.exchangerate.host/convert?from=" + currencyCode.ToLower() + "&to=TRY"))?.Result.Replace(".", ","));
+                    await httpClient.GetStringAsync($"https://api.exchangerate.host/convert?from={currencyCode.ToLower()}&to=TRY"))?.Result.Replace(".", ","));
             }
 
-            System.Console.WriteLine(currencyCode + " Value : " + currencyValue.Value);
+            System.Console.WriteLine($"{currencyCode} Value: {currencyValue.Value}");
             System.Console.WriteLine("-------------------------------------------------");
             return currencyValue;
 
@@ -78,21 +81,18 @@ namespace Hangfire.RecurringJobs
         public async Task<CurrencyValue> GetFromFreeCurrencyApi(string currencyCode)
         {
             var currencyValue = new CurrencyValue();
-            var apiKey = "c33a4390-6d40-11ec-9291-4df0a4bd7c60";
+            var apiKey = _configuration.GetValue<string>("FreeCurrencyApiKey");
             using (var httpClient = new HttpClient())
             {
                 var getCurrency = Newtonsoft.Json.JsonConvert.DeserializeObject<ApiModel>(
-                    await httpClient.GetStringAsync(
-                        "https://freecurrencyapi.net/api/v2/latest?apikey=" + apiKey + "&base_currency=TRY")).Data;
+                    await httpClient.GetStringAsync($"https://freecurrencyapi.net/api/v2/latest?apikey={apiKey}&base_currency=TRY")).Data;
                 float value;
 
                 if (getCurrency.TryGetValue(currencyCode, out value))
                     currencyValue.Value = (float)Math.Round(1 / value, 4);
-
-
             }
 
-            System.Console.WriteLine(currencyCode + " Value : " + currencyValue.Value);
+            System.Console.WriteLine($"{currencyCode} Value : {currencyValue.Value}");
             System.Console.WriteLine("-------------------------------------------------");
             return currencyValue;
         }
