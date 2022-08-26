@@ -1,0 +1,17 @@
+version: "2.2"
+services:
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - /var/docker_volumes/databases/postgresql/data:/var/lib/postgresql/data
+
+  exchange-rate:
+    image: exchange-rate
+    ports:
+      - "5001:80"
