@@ -66,11 +66,10 @@ builder.Services.AddSingleton<ApplicationDbContext>(new ApplicationDbContext(bui
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseAuthorization();
 
@@ -92,8 +91,6 @@ app.UseAuthorization();
 //     System.Console.WriteLine($"Action Name {actionName}");
 //     timer.Stop();
 //     System.Console.WriteLine($"Job Time: {timer.ElapsedMilliseconds} ms");
-
-
 // });
 app.MapControllers();
 

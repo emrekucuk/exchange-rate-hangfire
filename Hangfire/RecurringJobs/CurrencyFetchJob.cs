@@ -35,19 +35,25 @@ namespace Hangfire.RecurringJobs
                 // var currencyValue = await GetFromFreeCurrencyApi(currency.Code);
                 var currencyValue = await GetFromExchangeRateApi(currency.Code);
 
-                if (currencyExchanges.Count > 0)
+                var matchedCurrency = currencyExchanges.FirstOrDefault(c => c.CurrencyId == currency.Id);
+                if (matchedCurrency == null)
                 {
-                    foreach (var currencyExchange in currencyExchanges)
+                    matchedCurrency = new CurrencyExchange()
                     {
-                        if (currencyExchange.CurrencyId == currency.Id)
-                        {
-                            currencyExchange.Date = DateTime.UtcNow;
-                            currencyExchange.Value = currencyValue.Value;
-                            _applicationDbContext.CurrencyExchanges.Update(currencyExchange);
-                        }
-                    }
-                    await _applicationDbContext.SaveChangesAsync();
+                        CurrencyId = currency.Id,
+                        Date = DateTime.UtcNow,
+                        Value = currencyValue.Value,
+                    };
+                    _applicationDbContext.CurrencyExchanges.Add(matchedCurrency);
                 }
+                else
+                {
+                    matchedCurrency.Date = DateTime.UtcNow;
+                    matchedCurrency.Value = currencyValue.Value;
+                    _applicationDbContext.CurrencyExchanges.Update(matchedCurrency);
+                }
+
+                await _applicationDbContext.SaveChangesAsync();
             }
         }
 
@@ -57,7 +63,7 @@ namespace Hangfire.RecurringJobs
             using (var httpClient = new HttpClient())
             {
                 currencyValue.Value = ConvertStringTo4DigitFloat(JsonConvert.DeserializeObject<ApiModel>(
-                    await httpClient.GetStringAsync($"https://api.exchangerate.host/convert?from={currencyCode.ToLower()}&to=TRY"))?.Result.Replace(".", ","));
+                    await httpClient.GetStringAsync($"https://api.exchangerate.host/convert?from={currencyCode.ToLower()}&to=TRY"))?.Result);
             }
 
             System.Console.WriteLine($"{currencyCode} Value: {currencyValue.Value}");
