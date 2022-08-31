@@ -1,0 +1,1 @@
+docker build -t exchange-rate -f ../../Docker/Dockerfile ../../..

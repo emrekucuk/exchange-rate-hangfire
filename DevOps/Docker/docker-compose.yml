@@ -15,3 +15,7 @@ services:
     image: exchange-rate
     ports:
       - "5001:80"
+    environment:
+      - PostgresConnection=User ID=postgres;Password=postgres;Server=192.168.2.194;Port=5432;Database=currency-exchange;
+    depends_on:
+      - postgres

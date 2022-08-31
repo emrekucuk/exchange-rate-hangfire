@@ -51,16 +51,17 @@ builder.Services.AddSwaggerGen(c =>
                 });
             });
 
+var postgresqlConnectionString = builder.Configuration.GetValue(typeof(string), "PostgresConnection").ToString();
 
 // Add Hangfire services.
 builder.Services.Configure<HangfireSettings>(builder.Configuration.GetSection("HangfireSettings"));
 builder.Services.AddHangfire(config =>
-                config.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("PostgresConnection")));
+                config.UsePostgreSqlStorage(postgresqlConnectionString));
 
 
 builder.Services.AddHangfireServer();
 
-builder.Services.AddSingleton<ApplicationDbContext>(new ApplicationDbContext(builder.Configuration.GetConnectionString("PostgresConnection")));
+builder.Services.AddSingleton<ApplicationDbContext>(new ApplicationDbContext(postgresqlConnectionString));
 
 
 var app = builder.Build();

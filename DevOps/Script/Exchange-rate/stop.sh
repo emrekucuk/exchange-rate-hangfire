@@ -1,0 +1,1 @@
+docker stop exchange-rate && docker rm exchange-rate
