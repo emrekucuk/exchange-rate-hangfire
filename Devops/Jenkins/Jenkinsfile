@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('ExchangeRate') {
+            stages {
+                stage('ExchangeRate - CI') {
+                    steps {
+                        sh("docker build -t registry.dev.crosstech.com.tr/exchange-rate -f Devops/Docker/Dockerfile .")
+                        sh("docker push registry.dev.crosstech.com.tr/exchange-rate")
+                    }
+                }
+                 stage('ExchangeRate - CD') {
+                    steps {
+                        sh("./Devops/Scripts/exchange-rate/stop.sh || true ")
+                        sh("./Devops/Scripts/exchange-rate/start.sh ")
+                    }
+                }
+            }
+        }
+
+       	// stage('Clear Produced Dangling Containers/Layers') {
+        //     steps {
+				// sh("docker images | grep '<none>' | awk '{print \$3}' | xargs -I {} docker rmi -f {} || true")
+				// sh("docker images | grep 'registry.toprak.tkholding.com' | awk '{print \$3}' | xargs -I {} docker rmi -f {} || true")
+        //     }
+        // }
+    }
+}
