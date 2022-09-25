@@ -6,8 +6,8 @@ pipeline {
             stages {
                 stage('ExchangeRate - CI') {
                     steps {
-                        sh("docker build -t registry.dev.crosstech.com.tr/exchange-rate -f Devops/Docker/Dockerfile .")
-                        sh("docker push registry.dev.crosstech.com.tr/exchange-rate")
+                        sh("docker build -t exchange-rate -f Devops/Docker/Dockerfile .")
+                        sh("docker push exchange-rate")
                     }
                 }
                  stage('ExchangeRate - CD') {
@@ -18,12 +18,5 @@ pipeline {
                 }
             }
         }
-
-       	// stage('Clear Produced Dangling Containers/Layers') {
-        //     steps {
-				// sh("docker images | grep '<none>' | awk '{print \$3}' | xargs -I {} docker rmi -f {} || true")
-				// sh("docker images | grep 'registry.toprak.tkholding.com' | awk '{print \$3}' | xargs -I {} docker rmi -f {} || true")
-        //     }
-        // }
     }
 }
