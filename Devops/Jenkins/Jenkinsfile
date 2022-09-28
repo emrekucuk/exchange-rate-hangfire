@@ -6,8 +6,8 @@ pipeline {
             stages {
                 stage('ExchangeRate - CI') {
                     steps {
-                        sh("docker build -t exchange-rate -f Devops/Docker/Dockerfile .")
-                        sh("docker push exchange-rate")
+                        sh("docker build -t registry.dev.crosstech.com.tr/exchange-rate -f Devops/Docker/Dockerfile .")
+                        sh("docker push registry.dev.crosstech.com.tr/exchange-rate")
                     }
                 }
                  stage('ExchangeRate - CD') {
