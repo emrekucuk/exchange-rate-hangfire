@@ -9,6 +9,10 @@
 ### Anlık olarak kurları görmek istersek "Hangfire" üzerinden job'ı çalıştırabiliriz
 
 
+## Add Migration
+```sh
+dotnet-ef migrations add MigrationName
+```
 ## Database Update
 ```sh
 dotnet-ef database update
