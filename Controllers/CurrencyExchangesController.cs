@@ -63,5 +63,29 @@ namespace exchange_rate_hangfire.Controllers
             return dtoModels;
         }
 
+        [AllowAnonymous]
+        [HttpGet("[action]")]
+        public async Task<List<CurrencyExchangeDto>> GetByDate(DateTime date)
+        {
+            var entities = await _applicationDbContext.CurrencyExchanges
+                                    .Where(c => c.Date.Day == date.Day && c.Date.Month == date.Month && c.Date.Year == date.Year)
+                                    .Include(c => c.Currency)
+                                    .ToListAsync();
+            // Mapping to Dto
+            var dtoModels = new List<CurrencyExchangeDto>();
+            entities?.ForEach((entity) =>
+            {
+                dtoModels.Add(new CurrencyExchangeDto()
+                {
+                    Id = entity.Id,
+                    CurrencyName = entity.Currency.Name,
+                    Value = entity.Value,
+                    Date = entity.Date,
+                });
+            });
+
+            return dtoModels;
+        }
+
     }
 }
