@@ -90,6 +90,7 @@ namespace Hangfire.RecurringJobs
             System.Console.WriteLine("-------------------------------------------------");
             return currencyValue;
         }
+
         static float ConvertStringTo4DigitFloat(string value)
         {
             double newValue = Double.Parse(value);
